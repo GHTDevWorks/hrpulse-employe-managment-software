@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --paper: #f3f5f4;
+  --surface: #ffffff;
+  --sunken: #ebefed;
+  --line: #dce2df;
+  --line-strong: #c4cdc8;
+  --ink: #17211c;
+  --muted: #5b6962;
+  --faint: #87948d;
+  --accent: #1f6f54;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefe5;
+  --late: #a86a12;
+  --late-soft: #fbefd6;
+  --absent: #b4442e;
+  --absent-soft: #f8e1db;
+  --leave: #4a62a8;
+  --leave-soft: #e3e8f7;
+  --half: #7656a8;
+  --half-soft: #ece5f5;
+  --off: #6b7b8c;
+  --off-soft: #e6eaee;
+  --ruler: #17211c;
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #0f1512;
+  --surface: #161e1a;
+  --sunken: #1c2621;
+  --line: #29352f;
+  --line-strong: #3a4842;
+  --ink: #e6ece9;
+  --muted: #9aa8a1;
+  --faint: #6f7d76;
+  --accent: #4fb98e;
+  --accent-ink: #0b1a13;
+  --accent-soft: #173528;
+  --late: #e2a94c;
+  --late-soft: #3a2d14;
+  --absent: #e8806a;
+  --absent-soft: #3d1f19;
+  --leave: #93a8ea;
+  --leave-soft: #1f2843;
+  --half: #b8a0e4;
+  --half-soft: #2b2339;
+  --off: #9aa8b8;
+  --off-soft: #222a33;
+  --ruler: #e6ece9;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-late: var(--late);
+  --color-late-soft: var(--late-soft);
+  --color-absent: var(--absent);
+  --color-absent-soft: var(--absent-soft);
+  --color-leave: var(--leave);
+  --color-leave-soft: var(--leave-soft);
+  --color-half: var(--half);
+  --color-half-soft: var(--half-soft);
+  --color-off: var(--off);
+  --color-off-soft: var(--off-soft);
+}
+
+html, body, #root { min-height: 100%; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+input[type="date"], input[type="time"] { color-scheme: inherit; }
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+
+@keyframes needle-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.needle-pulse { animation: needle-pulse 2s ease-in-out infinite; }
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.drawer-in { animation: drawer-in 180ms ease-out; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(6px) scale(0.98); } to { opacity: 1; transform: none; } }
+.pop-in { animation: pop-in 160ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
