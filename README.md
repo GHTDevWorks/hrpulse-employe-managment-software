@@ -55,21 +55,22 @@ Days before a person's joining date are not counted as absent.
 
 Requirements: Node.js 20+ and MongoDB (local or Atlas).
 
-```bash
-# 1. API
-cd backend
-cp .env.example .env        # then edit MONGO_URI and JWT_SECRET
-npm install
-npm run seed                # creates manager@test.com / 123456
-# or: npm run seed:demo     # also adds 6 sample people and 6 weeks of history
-npm run dev                 # http://localhost:5005
+Run everything from the main `hrpulse` folder:
 
-# 2. Web app (new terminal)
-cd frontend
-cp .env.example .env        # VITE_API_URL=http://localhost:5005/api
-npm install
-npm run dev                 # http://localhost:5173
+```bash
+npm install            # installs backend and frontend packages too
+npm run setup          # creates backend/.env and frontend/.env (with a random JWT secret)
+# open backend/.env and set MONGO_URI if you're not using a local MongoDB
+npm run seed:demo      # manager@test.com / 123456 + sample people and history
+                       # (or: npm run seed  for the manager account only)
+npm run dev            # starts the API (port 5005) and the web app together
 ```
+
+Open the address shown after `[web] Local:` (usually http://localhost:5173).
+
+Other commands from the main folder: `npm run reset-manager`, `npm run migrate`, `npm run build`.
+
+You can still run each part on its own with `npm run dev` inside `backend` or `frontend`.
 
 Change the default manager password from the Profile page after the first sign-in.
 
@@ -104,6 +105,28 @@ npm run migrate
 ```
 
 It copies every `users[].attendance[]` entry into the new `attendances` collection, works out late minutes using the current settings, and removes the old arrays. It is safe to run more than once. Existing logins and passwords keep working. Old URLs (`/employee`, `/developer`, `/manager/...`) redirect to the new pages.
+
+## Deploy to Vercel
+
+The project deploys as one Vercel project with two services (see `vercel.json`): the Express API under `/api` and the Vite app for everything else, on the same domain.
+
+1. **Create a MongoDB Atlas database.** `localhost` does not exist on Vercel. In Atlas, under *Network Access*, add `0.0.0.0/0` (Vercel's IPs change), and copy the connection string, for example
+   `mongodb+srv://user:password@cluster0.xxxxx.mongodb.net/hrpulse?retryWrites=true&w=majority`.
+2. **Create the manager in that database** from your computer: put the Atlas string in `backend/.env` as `MONGO_URI`, then run `npm run seed:demo` (or `npm run reset-manager`).
+3. **Push the project to GitHub** and import it in Vercel. Leave the root directory as the main `hrpulse` folder; `vercel.json` tells Vercel about both services.
+4. **Add environment variables** in Vercel (Project → Settings → Environment Variables):
+
+   | Name | Value |
+   |---|---|
+   | `MONGO_URI` | your Atlas connection string |
+   | `JWT_SECRET` | a long random string |
+   | `VITE_DEMO_LOGIN` | `true` or `false` (optional) |
+   | `VITE_DEMO_EMAIL`, `VITE_DEMO_PASSWORD` | optional, shown in the demo box |
+
+   Do **not** set `VITE_API_URL`; the app calls `/api` on its own domain.
+5. **Deploy**, then open `https://<your-app>.vercel.app/api/health`. It should show `"configured": true`. If it shows `false`, an environment variable is missing; redeploy after adding it.
+
+On Vercel the API runs as a serverless function, so the 10-minute auto sign-out timer doesn't run. Forgotten sessions are closed the next time anyone loads the app instead.
 
 ## API overview
 

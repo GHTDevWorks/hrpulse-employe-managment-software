@@ -1,17 +1,25 @@
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
-  if (!process.env.MONGO_URI) {
-    console.error('MONGO_URI is not set. Copy .env.example to .env and fill it in.');
-    process.exit(1);
+// One shared connection. On Vercel the function is reused between requests,
+// so we connect once and reuse the same promise.
+let connecting = null;
+
+const connectDB = () => {
+  if (mongoose.connection.readyState === 1) return Promise.resolve(mongoose.connection);
+  if (!process.env.MONGO_URI) return Promise.reject(new Error('MONGO_URI is not set'));
+  if (!connecting) {
+    connecting = mongoose
+      .connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 10000 })
+      .then((conn) => {
+        console.log(`MongoDB connected: ${conn.connection.host}`);
+        return conn.connection;
+      })
+      .catch((err) => {
+        connecting = null; // allow a retry on the next request
+        throw err;
+      });
   }
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    console.log(`MongoDB connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
-  }
+  return connecting;
 };
 
 module.exports = connectDB;

@@ -1,7 +1,14 @@
 import axios from 'axios';
 
+// In development the API runs on its own port; in production (Vercel) it is on the same domain under /api.
+// A localhost URL left in .env is ignored in a production build so a deploy never points at your own computer.
+const envUrl = import.meta.env.VITE_API_URL;
+const baseURL = import.meta.env.DEV
+  ? envUrl || 'http://localhost:5005/api'
+  : envUrl && !/localhost|127\.0\.0\.1/.test(envUrl) ? envUrl : '/api';
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5005/api',
+  baseURL,
   timeout: 20000,
 });
 
