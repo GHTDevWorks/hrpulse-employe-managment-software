@@ -108,23 +108,24 @@ It copies every `users[].attendance[]` entry into the new `attendances` collecti
 
 ## Deploy to Vercel
 
-The project deploys as one Vercel project with two services (see `vercel.json`): the Express API under `/api` and the Vite app for everything else, on the same domain.
+The project deploys as one Vercel project with two services (see `vercel.json`): the Express API under `/api` and the Vite app for everything else, on the same domain. Everything can be done from the Vercel dashboard.
 
-1. **Create a MongoDB Atlas database.** `localhost` does not exist on Vercel. In Atlas, under *Network Access*, add `0.0.0.0/0` (Vercel's IPs change), and copy the connection string, for example
-   `mongodb+srv://user:password@cluster0.xxxxx.mongodb.net/hrpulse?retryWrites=true&w=majority`.
-2. **Create the manager in that database** from your computer: put the Atlas string in `backend/.env` as `MONGO_URI`, then run `npm run seed:demo` (or `npm run reset-manager`).
-3. **Push the project to GitHub** and import it in Vercel. Leave the root directory as the main `hrpulse` folder; `vercel.json` tells Vercel about both services.
-4. **Add environment variables** in Vercel (Project → Settings → Environment Variables):
+1. **Push the project to GitHub and import it in Vercel.** Leave the root directory as the main `hrpulse` folder.
+2. **Add a database:** Project → **Storage** → **Create Database** (or **Browse Marketplace**) → **MongoDB Atlas** → choose the free plan → connect it to this project. Vercel adds a `MONGODB_URI` variable automatically; the app reads it. Data goes into a database named `hrpulse`.
+3. **Add environment variables** (Project → Settings → Environment Variables):
 
    | Name | Value |
    |---|---|
-   | `MONGO_URI` | your Atlas connection string |
-   | `JWT_SECRET` | a long random string |
-   | `VITE_DEMO_LOGIN` | `true` or `false` (optional) |
-   | `VITE_DEMO_EMAIL`, `VITE_DEMO_PASSWORD` | optional, shown in the demo box |
+   | `JWT_SECRET` | a long random string (required) |
+   | `SEED_DEMO` | `true` to add sample people and history on first start (optional) |
+   | `SEED_EMAIL`, `SEED_PASSWORD` | first manager login, default `manager@test.com` / `123456` (optional) |
+   | `VITE_DEMO_LOGIN`, `VITE_DEMO_EMAIL`, `VITE_DEMO_PASSWORD` | demo box on the sign-in page (optional) |
 
-   Do **not** set `VITE_API_URL`; the app calls `/api` on its own domain.
-5. **Deploy**, then open `https://<your-app>.vercel.app/api/health`. It should show `"configured": true`. If it shows `false`, an environment variable is missing; redeploy after adding it.
+   Do **not** set `VITE_API_URL`, and remove any `MONGO_URI` pointing at `localhost` or `127.0.0.1`.
+4. **Redeploy** (Deployments → ⋯ → Redeploy), then open `https://<your-app>.vercel.app/api/health`. It should show `"configured": true`.
+5. **Sign in.** On an empty database the first request creates the manager account (and the demo data if `SEED_DEMO=true`), so the first sign-in can take a few seconds.
+
+You can also use your own MongoDB Atlas cluster instead of the Vercel integration: set `MONGO_URI` to its `mongodb+srv://...` string and allow `0.0.0.0/0` in Atlas Network Access.
 
 On Vercel the API runs as a serverless function, so the 10-minute auto sign-out timer doesn't run. Forgotten sessions are closed the next time anyone loads the app instead.
 

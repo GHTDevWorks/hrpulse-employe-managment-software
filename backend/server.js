@@ -1,4 +1,4 @@
-require('dotenv').config({ quiet: true });
+require('./config/env');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -9,7 +9,7 @@ const { notFound, errorHandler } = require('./middleware/error');
 
 const onVercel = !!process.env.VERCEL;
 const configError = !process.env.MONGO_URI
-  ? 'MONGO_URI is not set. Add it to backend/.env (local) or the Vercel project environment variables.'
+  ? 'MONGO_URI is not set. Add it to backend/.env (local), or connect a MongoDB Atlas database in Vercel (Storage tab), which sets MONGODB_URI.'
   : !process.env.JWT_SECRET || process.env.JWT_SECRET.length < 16
     ? 'JWT_SECRET must be set to a long random string (16+ characters).'
     : '';

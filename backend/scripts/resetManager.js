@@ -2,7 +2,7 @@
  * Usage: npm run reset-manager            -> manager@test.com / 123456
  *        npm run reset-manager -- you@company.com newPassword
  */
-require('dotenv').config({ quiet: true });
+require('../config/env');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 
@@ -11,7 +11,7 @@ const password = process.argv[3] || process.env.SEED_PASSWORD || '123456';
 
 (async () => {
   if (password.length < 6) throw new Error('Password must be at least 6 characters');
-  await mongoose.connect(process.env.MONGO_URI);
+  await mongoose.connect(process.env.MONGO_URI, { dbName: process.env.MONGO_DB_NAME });
   let user = await User.findOne({ email });
   if (!user) {
     user = new User({ name: 'Manager', email, role: 'manager', designation: 'Office Manager' });

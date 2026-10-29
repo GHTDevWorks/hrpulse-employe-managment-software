@@ -3,14 +3,14 @@
  * (users[].attendance[]). Copies every entry into the new `attendances` collection and
  * removes the old array. Safe to run more than once: existing (user, date) pairs are skipped.
  */
-require('dotenv').config({ quiet: true });
+require('../config/env');
 const mongoose = require('mongoose');
 const Attendance = require('../models/Attendance');
 const Settings = require('../models/Settings');
 const { lateMinutesFor } = require('../controllers/attendanceController');
 
 (async () => {
-  await mongoose.connect(process.env.MONGO_URI);
+  await mongoose.connect(process.env.MONGO_URI, { dbName: process.env.MONGO_DB_NAME });
   const settings = await Settings.get();
   const users = mongoose.connection.collection('users');
   const cursor = users.find({ 'attendance.0': { $exists: true } });
