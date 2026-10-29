@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { DEMO_MODE, demoAdapter } from '../demo/adapter';
 
 // In development the API runs on its own port; in production (Vercel) it is on the same domain under /api.
 // A localhost URL left in .env is ignored in a production build so a deploy never points at your own computer.
@@ -10,6 +11,8 @@ const baseURL = import.meta.env.DEV
 const API = axios.create({
   baseURL,
   timeout: 20000,
+  // In demo mode there is no server: requests are answered in the browser (see src/demo).
+  ...(DEMO_MODE ? { adapter: demoAdapter } : {}),
 });
 
 API.interceptors.request.use((config) => {

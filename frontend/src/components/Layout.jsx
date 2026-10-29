@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Avatar, cx } from './ui';
 import API from '../api/client';
+import { DEMO_MODE } from '../demo/adapter';
 
 const ME = [
   { to: '/day', label: 'My day', icon: Clock },
@@ -81,6 +82,11 @@ function SidebarBody({ onNavigate }) {
         </div>
       </nav>
       <div className="border-t border-line p-3">
+        {DEMO_MODE && (
+          <p className="mx-2 mb-2 rounded-md bg-late-soft px-2.5 py-1.5 text-[11px] leading-snug text-late">
+            Demo mode: sample data, saved only in this browser.
+          </p>
+        )}
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <Avatar name={user?.name} size="sm" />
           <div className="min-w-0 flex-1">

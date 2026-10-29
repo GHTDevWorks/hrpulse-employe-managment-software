@@ -106,28 +106,33 @@ npm run migrate
 
 It copies every `users[].attendance[]` entry into the new `attendances` collection, works out late minutes using the current settings, and removes the old arrays. It is safe to run more than once. Existing logins and passwords keep working. Old URLs (`/employee`, `/developer`, `/manager/...`) redirect to the new pages.
 
-## Deploy to Vercel
+## Deploy to Vercel (demo, no database)
 
-The project deploys as one Vercel project with two services (see `vercel.json`): the Express API under `/api` and the Vite app for everything else, on the same domain. Everything can be done from the Vercel dashboard.
+By default the project deploys to Vercel as a **demo that needs no database and no backend**:
 
-1. **Push the project to GitHub and import it in Vercel.** Leave the root directory as the main `hrpulse` folder.
-2. **Add a database:** Project → **Storage** → **Create Database** (or **Browse Marketplace**) → **MongoDB Atlas** → choose the free plan → connect it to this project. Vercel adds a `MONGODB_URI` variable automatically; the app reads it. Data goes into a database named `hrpulse`.
-3. **Add environment variables** (Project → Settings → Environment Variables):
+- `frontend/.env.production` sets `VITE_DEMO_MODE=true`. In that mode every API call is answered inside the browser by `frontend/src/demo/server.js`, which follows the same rules as the Express API.
+- Data is saved in each visitor's browser (localStorage), starting from a sample team of 7 people with six weeks of history. Visitors don't see each other's changes. "Reset demo data" on the sign-in page starts over, and untouched data refreshes each day so dates stay current.
+- `vercel.json` deploys only the `frontend` folder.
 
-   | Name | Value |
-   |---|---|
-   | `JWT_SECRET` | a long random string (required) |
-   | `SEED_DEMO` | `true` to add sample people and history on first start (optional) |
-   | `SEED_EMAIL`, `SEED_PASSWORD` | first manager login, default `manager@test.com` / `123456` (optional) |
-   | `VITE_DEMO_LOGIN`, `VITE_DEMO_EMAIL`, `VITE_DEMO_PASSWORD` | demo box on the sign-in page (optional) |
+Steps:
 
-   Do **not** set `VITE_API_URL`, and remove any `MONGO_URI` pointing at `localhost` or `127.0.0.1`.
-4. **Redeploy** (Deployments → ⋯ → Redeploy), then open `https://<your-app>.vercel.app/api/health`. It should show `"configured": true`.
-5. **Sign in.** On an empty database the first request creates the manager account (and the demo data if `SEED_DEMO=true`), so the first sign-in can take a few seconds.
+1. Push to GitHub and import the repo in Vercel (root directory: the main folder, where `vercel.json` is).
+2. Deploy. No environment variables are needed.
+3. Open the site and click **Sign in as manager** or **Sign in as an employee**.
 
-You can also use your own MongoDB Atlas cluster instead of the Vercel integration: set `MONGO_URI` to its `mongodb+srv://...` string and allow `0.0.0.0/0` in Atlas Network Access.
+Local development (`npm run dev`) still uses the real Express API and MongoDB; demo mode only applies to production builds.
 
-On Vercel the API runs as a serverless function, so the 10-minute auto sign-out timer doesn't run. Forgotten sessions are closed the next time anyone loads the app instead.
+### Full version with a real database
+
+To deploy the real API with shared data instead:
+
+1. Set `VITE_DEMO_MODE=false` in `frontend/.env.production`.
+2. Replace `vercel.json` with `vercel.fullstack.json` (it adds the Express backend under `/api`).
+3. Add a database: Project → **Storage** → **MongoDB Atlas** (sets `MONGODB_URI`), or set `MONGO_URI` to your own Atlas `mongodb+srv://...` string with `0.0.0.0/0` allowed in Atlas Network Access.
+4. Add `JWT_SECRET` (a long random string). Optional: `SEED_DEMO=true` for sample data on first start, `SEED_EMAIL` / `SEED_PASSWORD` for the first manager.
+5. Redeploy and check `https://<your-app>.vercel.app/api/health` shows `"configured": true`.
+
+On Vercel the API runs as a serverless function, so the 10-minute auto sign-out timer doesn't run; forgotten sessions are closed the next time anyone loads the app.
 
 ## API overview
 

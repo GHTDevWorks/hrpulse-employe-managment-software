@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Copy, Check, Eye, EyeOff, LogIn, KeyRound } from 'lucide-react';
+import { Copy, Check, Eye, EyeOff, LogIn, KeyRound, RotateCcw } from 'lucide-react';
+import { DEMO_MODE, resetDemo } from '../demo/adapter';
 import API, { errMsg } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Button, Field, Input } from '../components/ui';
@@ -9,7 +10,7 @@ import { useNow } from '../lib/hooks';
 // Demo credentials shown on the sign-in page. Change them in frontend/.env,
 // or set VITE_DEMO_LOGIN=false to hide the box for a real deployment.
 const DEMO = {
-  enabled: import.meta.env.VITE_DEMO_LOGIN !== 'false',
+  enabled: import.meta.env.VITE_DEMO_LOGIN !== 'false' || DEMO_MODE,
   email: import.meta.env.VITE_DEMO_EMAIL || 'manager@test.com',
   password: import.meta.env.VITE_DEMO_PASSWORD || '123456',
 };
@@ -38,18 +39,36 @@ function CopyRow({ label, value }) {
 }
 
 function DemoBox({ onUse, loading, className }) {
+  const [resetDone, setResetDone] = useState(false);
+  const reset = async () => {
+    await resetDemo();
+    setResetDone(true);
+    setTimeout(() => setResetDone(false), 2500);
+  };
   return (
     <div className={`rounded-2xl border border-line bg-surface p-5 shadow-xl shadow-black/10 ${className || ''}`}>
       <div className="flex items-center gap-2">
         <KeyRound className="size-4 text-accent" />
         <p className="text-sm font-semibold text-ink">Demo login</p>
       </div>
-      <p className="mt-1 text-[13px] text-muted">This is a demo. Use the manager account to try every feature.</p>
+      <p className="mt-1 text-[13px] text-muted">
+        {DEMO_MODE
+          ? 'Try it with a sample team. Changes are saved only in this browser.'
+          : 'This is a demo. Use the manager account to try every feature.'}
+      </p>
       <div className="mt-4 space-y-2">
         <CopyRow label="Email" value={DEMO.email} />
         <CopyRow label="Password" value={DEMO.password} />
       </div>
-      <Button type="button" variant="secondary" icon={LogIn} loading={loading} onClick={onUse} className="mt-4 w-full">Sign in as manager</Button>
+      <Button type="button" variant="secondary" icon={LogIn} loading={loading} onClick={() => onUse(DEMO.email, DEMO.password)} className="mt-4 w-full">Sign in as manager</Button>
+      {DEMO_MODE && (
+        <>
+          <Button type="button" variant="ghost" onClick={() => onUse('sara@test.com', '123456')} disabled={loading} className="mt-1.5 w-full">Sign in as an employee</Button>
+          <button type="button" onClick={reset} className="mt-3 inline-flex w-full items-center justify-center gap-1.5 text-xs text-faint hover:text-ink">
+            <RotateCcw className="size-3" />{resetDone ? 'Demo data reset' : 'Reset demo data'}
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -76,7 +95,7 @@ export default function Login() {
     }
   };
   const submit = (e) => { e.preventDefault(); signIn({ email, password }); };
-  const useDemo = () => { setEmail(DEMO.email); setPassword(DEMO.password); signIn({ email: DEMO.email, password: DEMO.password }); };
+  const useDemo = (e, p) => { setEmail(e); setPassword(p); signIn({ email: e, password: p }); };
 
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
